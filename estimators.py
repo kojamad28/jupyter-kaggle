@@ -324,65 +324,67 @@ class DataLogger:
             self._dataframe = pd.DataFrame(columns=metrics.keys())
         self._dataframe.loc[name] = metrics
     
-    def _calculate_nrows_and_ncols(self, n_data, n_cols):
+    def _calc_nrows_ncols(self, nplots, max_ncols):
         """
-        Calculate numbers of rows and columns for subplots from given data.
+        Calculates numbers of rows and columns for subplots.
 
         Parameters
         ----------
-        n_data : int
-            Length of the given data
-        n_cols : int
-            Number of columns for subplots
+        nplots : int
+            Number of subplots in the figure
+        max_ncols : int
+            Maximum number of columns in the figure
 
         Returns
         -------
-        n_rows
-            Calculated number of rows
-        n_cols
-            Calculated number of columns
+        nrows : int
+            Calculated number of rows in the figure
+        ncols : int
+            Calculated number of columns in the figure
         """
+        if isinstance(nplots, int) and isinstance(max_ncols, int):
+            if nplots <= 0 or max_ncols <= 0:
+                raise ValueError('nplots and max_ncols must be positive values.')
+        else:
+            raise TypeError('nplots and max_ncols must be positive integers.')
 
-        if n_data < n_cols:
-            n_cols = n_data
-        
-        n_rows = n_data // n_cols
-        
-        if n_data % n_cols:
-            n_rows += 1
+        if nplots < max_ncols:
+            ncols = nplots
+        else:
+            ncols = max_ncols
 
-        return n_rows, n_cols
+        nrows = nplots // ncols + int(nplots % ncols != 0)
 
-    def _get_ax(self, axes, idx, n_rows, n_cols):
+        return nrows, ncols
+
+    def _get_ax(self, axes, idx, nrows, ncols):
         """
-        Calculate the index of axis for a subplot.
+        Gets axis object for the subplot.
 
         Parameters
         ----------
-        axes
-            Axes for the figure
+        axes : matplotlib.axes.Axes
+            Axes objects to draw the plot onto
         idx : int
-            Index for the subplot
-        n_rows : int
+            Index number in plotted dataset
+        nrows : int
             Number of rows in the figure
-        n_cols : int
+        ncols : int
             Number of columns in the figure
 
         Returns
         -------
-        Axis of the subplot
+        matplotlib.axes.Axes
         """
 
-        if n_rows * n_cols > 1:
-            row = idx // n_cols
-            col = idx % n_cols
-            return axes[row, col]
-        elif n_rows * n_cols == 1:
+        if nrows > 1 and ncols > 1:
+            return axes[idx // ncols, idx % ncols]
+        elif nrows * ncols == 1:
             return axes
         else:
             return axes[idx]
         
-    def show_plots(self, n_cols=3, base_size=10):
+    def show_plots(self, max_ncols=3, base_size=10):
         """
         Display barplots comparing data between models.
 
@@ -394,10 +396,10 @@ class DataLogger:
             Size of a subplot
         """
         sns.set_context('poster', 1.5)
-        n_rows, n_cols = self._calculate_nrows_and_ncols(len(self._dataframe.columns, n_cols))
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(base_size*n_rows, base_size*n_cols), tight_layout=True)
+        nrows, ncols = self._calc_nrows_ncols(len(self._dataframe.columns), max_ncols)
+        fig, axes = plt.subplots(nrows, ncols, figsize=(base_size*nrows, base_size*ncols), tight_layout=True)
         for i, col in enumerate(self._dataframe.columns):
-            ax_i = self._get_ax(axes, i, n_rows, n_cols)
+            ax_i = self._get_ax(axes, i, nrows, ncols)
             sns.barplot(data=self._dataframe.reset_index(), x='index', y=col, ax=ax_i)
             ax_i.set(title=col, xlabel='', ylabel='')
             ax_i.set_xticklabels(ax_i.get_xticklabels(), rotation=45, ha='right')
