@@ -12,7 +12,7 @@ numpy
 scipy
 statsmodels
 openpyxl
-pandas
+pandas[performance]
 polars
 matplotlib
 seaborn
