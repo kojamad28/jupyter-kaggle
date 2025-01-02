@@ -151,7 +151,7 @@ class PycaretEstimator:
         Parameters
         ----------
         model : Union[ClassificationModel, RegressionModel]
-            Estimator
+            Estimator created by pycaret
         """
         self._metrics = {}
         df_metrics = self._mod.get_metrics()
