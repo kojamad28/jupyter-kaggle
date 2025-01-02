@@ -1,7 +1,12 @@
+from typing import Optional, Union
+
 import numpy as np
 import pandas as pd
+import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pycaret.classification import ClassificationModel
+from pycaret.regression import RegressionModel
 from pycaret.utils import check_metric
 
 # Keys for the input_files and input_data dictionaries created by the DataImporter
@@ -33,7 +38,11 @@ class DataImporter:
         Import the csv files as pandas.dataframes and return the dictionary of the dataframes.
     """
     
-    def __init__(self, input_dir='./input/', train_file='train.csv', test_file='test.csv', sample_submission_file='sample_submission.csv', index_col=None):
+    def __init__(
+            self, input_dir: str = './input/',
+            train_file: str = 'train.csv', test_file: str = 'test.csv',
+            sample_submission_file: str = 'sample_submission.csv', index_col: Union[str, int, None] = None
+        ):
         self._train_file_path = input_dir + train_file
         self._test_file_path = input_dir + test_file
         self._sample_submission_file_path = input_dir + sample_submission_file
@@ -114,8 +123,8 @@ class PycaretEstimator:
         Execute predictions by simple parameters.
     """
     
-    def __init__(self, mod, input_data,
-    created_target_col='Label', metrics_name_col='Name', metrics_display_name_col='Display Name',
+    def __init__(self, mod, input_data: dict,
+    created_target_col: str = 'Label', metrics_name_col: str = 'Name', metrics_display_name_col: str = 'Display Name',
     **kwargs):
         self._mod = mod
         self.train_data = input_data[KEY_TRAIN_DATA]
@@ -135,13 +144,13 @@ class PycaretEstimator:
     def metrics(self):
         return self._metrics
     
-    def _calculate_metrics(self, model):
+    def _calculate_metrics(self, model: Union[ClassificationModel, RegressionModel]):
         """
         Compute metrics from whole train dataset.
 
         Parameters
         ----------
-        model
+        model : Union[ClassificationModel, RegressionModel]
             Estimator
         """
         self._metrics = {}
@@ -167,7 +176,7 @@ class PycaretEstimator:
         df_submit.loc[:, self.target] = np.nan
         return df_submit
         
-    def check_baseline(self, metric, tune_by='optuna', tuning_custom_grid=None):
+    def check_baseline(self, metric: str, tune_by: str = 'optuna', tuning_custom_grid: Optional[dict] = None):
         """
         Execute predictions by simple parameters.
 
@@ -226,7 +235,7 @@ class DataLogger:
     def dataframe(self):
         return self._dataframe
         
-    def add(self, metrics, name):
+    def add(self, metrics: dict, name: str):
         """
         Insert data of a new model.
 
@@ -241,7 +250,7 @@ class DataLogger:
             self._dataframe = pd.DataFrame(columns=metrics.keys())
         self._dataframe.loc[name] = metrics
     
-    def _calc_nrows_ncols(self, nplots, max_ncols):
+    def _calc_nrows_ncols(self, nplots: int, max_ncols: int):
         """
         Calculates numbers of rows and columns for subplots.
 
@@ -274,7 +283,7 @@ class DataLogger:
 
         return nrows, ncols
 
-    def _get_ax(self, axes, idx, nrows, ncols):
+    def _get_ax(self, axes: matplotlib.axes.Axes, idx: int, nrows: int, ncols: int):
         """
         Gets axis object for the subplot.
 
@@ -301,7 +310,7 @@ class DataLogger:
         else:
             return axes[idx]
         
-    def show_plots(self, max_ncols=3, base_size=10):
+    def show_plots(self, max_ncols: int= 3, base_size: int = 10):
         """
         Display barplots comparing data between models.
 
