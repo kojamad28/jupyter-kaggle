@@ -19,6 +19,7 @@ seaborn
 fastcluster
 requests
 scikit-learn
+jupyterlab
 pycaret[full]
 torch
 torchvision
@@ -32,5 +33,4 @@ anndata
 scanpy
 pymc
 arviz
-jupyterlab
 kaggle
